@@ -1,26 +1,151 @@
 ﻿@page "/counter"
 @using MauiAppExcample.Service
 
-<h1>Counter</h1>
+<h1>Media Excample</h1>
 
-<p role="status">Current count: @currentCount</p>
+@if(_photo is not null)
+{
+	<img height=400 width=300 src="data:image/jpg;base64,@_photo" />
+	<br />
+	<br />
+}
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<button class="btn btn-primary" @onclick="IncrementCount">拍照</button>
+<br />
+<br />
+
+@if(_qrText is not null)
+{
+	<p>@_qrText</p>
+	<br />
+	<br />
+}
+<button class="btn btn-primary" @onclick="QR">扫码</button>
+<br />
+<br />
+@if(_bluetoothDevices is not null && _bluetoothDevices.Count>0)
+{
+	foreach(var device in _bluetoothDevices)
+	{
+		<p @onclick="()=>Send(device)">@device</p>
+	}
+}
+<button class="btn btn-primary" @onclick="Open">蓝牙</button>
 
 @code {
-	private int currentCount = 0;
+	private string? _photo;
+	private string? _qrText;
+	private List<string>? _bluetoothDevices;
+	private string? _deviceSend;
+	private bool _isOpen;
+	private int currentDeviceCount;
 
-	private void IncrementCount()
+	private async Task IncrementCount()
 	{
-		currentCount=currentCount+100;
 		try
 		{
-			CameraService cameraService = new CameraService();
-			cameraService.OpenCamera();
+			Task.Factory.StartNew(async () =>
+			{
+				_photo = await CameraService.TakePhotoAsync();
+				_photo = ConvertImageToBase64(_photo);
+				base.InvokeAsync(base.StateHasChanged);
+			},default,default,TaskScheduler.Default);
+
 		}catch(Exception e)
 		{
 
 		}
 
 	}
+
+	string ConvertImageToBase64(string file)
+	{
+		using (MemoryStream memoryStream = new MemoryStream(File.ReadAllBytes(file)))
+		{
+			byte[] imageBytes = memoryStream.ToArray();
+			return Convert.ToBase64String(imageBytes);
+		}
+	}
+
+	private async Task QR()
+	{
+		try
+		{
+			//_qrText = await CameraService.QR();
+			CameraPreview.Current.StartRecording();
+		}catch(Exception e)
+		{
+
+		}
+
+	}
+
+	private void Open()
+	{
+		try
+		{			
+			if(_isOpen is false)
+			{
+				BluetoothService.Open();	
+				Task.Factory.StartNew(()=>
+				{
+					while(true)
+					{					
+						GetDevices();
+						if(currentDeviceCount!=_bluetoothDevices?.Count)
+						{
+							currentDeviceCount = _bluetoothDevices?.Count??0;
+							base.InvokeAsync(base.StateHasChanged);		
+						}
+
+						Task.Delay(3000).Wait();
+					}
+				},default,default,TaskScheduler.Default);
+			}
+			_isOpen = true;
+
+		}catch(Exception e)
+		{
+
+		}
+	}
+
+	private void GetDevices()
+	{
+		try
+		{
+			_bluetoothDevices = BluetoothService.GetDevices();
+
+		}catch(Exception e)
+		{
+
+		}
+	}
+
+	private void Send(string device)
+	{
+		try
+		{
+			string output = BluetoothService.Send(device);
+
+
+		}catch(Exception e)
+		{
+
+		}
+	}
+
+	private	void Listen()
+	{
+		BluetoothService.Listen(Connected);
+	}
+
+	void Connected(object obj)
+	{
+		if (obj is Android.Bluetooth.BluetoothSocket sock)
+		{         
+			StreamReader sReader = new StreamReader (sock.InputStream);
+			var c=sReader.ReadLine();
+		}
+    }
 }

@@ -28,6 +28,7 @@
 		<SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-android'">21.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -61,6 +62,7 @@
 
 	<ItemGroup>
 	  <None Remove="Platforms\Android\DeviceOrientationService.cs" />
+	  <None Remove="Platforms\Android\Resources\Layout\Main.axml" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -73,6 +75,151 @@
 
 	<ItemGroup>
 	  <_MauiCompileToAdd Remove="Platforms\Android\CameraService.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="Platforms\Android\BluetoothService.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\BluetoothService.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="Platforms\Android\CameraController.cs" />
+	  <None Include="Platforms\Android\CameraEventsListener.cs" />
+	  <None Include="Platforms\Android\CameraNew\CameraPreview.cs" />
+	  <None Include="Platforms\Android\CameraNew\VideoRecordFragment.cs" />
+	  <None Include="Platforms\Android\Camera\CameraAnalyzer.android.cs" />
+	  <None Include="Platforms\Android\Camera\CameraResolution.cs" />
+	  <None Include="Platforms\Android\Camera\FastJavaArrayEx.android.cs" />
+	  <None Include="Platforms\Android\Camera\FastJavaByteArrayYUVLuminanceSource.android.cs" />
+	  <None Include="Platforms\Android\Camera\IMobileBarcodeScanner.shared.cs" />
+	  <None Include="Platforms\Android\Camera\IScannerSessionHost.shared.cs" />
+	  <None Include="Platforms\Android\Camera\IScannerView.cs" />
+	  <None Include="Platforms\Android\Camera\MobileBarcodeScanner.shared.cs" />
+	  <None Include="Platforms\Android\Camera\MobileBarcodeScanningOptions.cs" />
+	  <None Include="Platforms\Android\Camera\Performance.cs" />
+	  <None Include="Platforms\Android\Camera\PermissionsHandler.android.cs" />
+	  <None Include="Platforms\Android\Camera\Torch.android.cs" />
+	  <None Include="Platforms\Android\Camera\ZxingActivity.cs" />
+	  <None Include="Platforms\Android\Camera\ZxingOverlayView.android.cs" />
+	  <None Include="Platforms\Android\Camera\ZXingScannerFragment.android.cs" />
+	  <None Include="Platforms\Android\Camera\ZXingSurfaceView.android.cs" />
+	  <None Include="Platforms\Android\MobileBarcodeScanner.android.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\CameraController.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\CameraEventsListener.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\MobileBarcodeScanner.android.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="Platforms\Android\Camera\MobileBarcodeScanner.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\Camera\MobileBarcodeScanner.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\Camera\IMobileBarcodeScanner.shared.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\Camera\IScannerView.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\Camera\MobileBarcodeScanningOptions.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\Camera\CameraResolution.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\Camera\IScannerSessionHost.shared.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\Camera\Performance.cs" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0-android'">
+	  <PackageReference Include="FastAndroidCamera">
+	    <Version>2.0.0</Version>
+	  </PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="ZXing.Net" Version="0.16.7" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\Camera\MobileBarcodeScanner.shared.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\Camera\ZxingActivity.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\Camera\ZXingScannerFragment.android.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\Camera\ZXingSurfaceView.android.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\Camera\CameraAnalyzer.android.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\Camera\Torch.android.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\Camera\ZxingOverlayView.android.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\Camera\PermissionsHandler.android.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\Camera\FastJavaByteArrayYUVLuminanceSource.android.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\Camera\FastJavaArrayEx.android.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\CameraNew\CameraPreview.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_MauiCompileToAdd Remove="Platforms\Android\CameraNew\VideoRecordFragment.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="Platforms\App.xaml.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiXaml Include="Platforms\Android\Resources\Layout\Main.axml">
+	    <SubType>Designer</SubType>
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	</ItemGroup>
 
 	<ItemGroup>

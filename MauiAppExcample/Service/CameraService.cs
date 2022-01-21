@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace MauiAppExcample.Service
 {
-    public partial class CameraService
+    public static partial class CameraService
     {
-        public partial void OpenCamera();
+        public static partial void OpenCamera();
+        public static partial Task<string?> TakePhotoAsync();
+        public static partial Task<string?> QR();
     }
 }
