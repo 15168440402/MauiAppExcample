@@ -9,8 +9,9 @@ namespace MauiAppExcample.Service
 	public static partial class BluetoothService
 	{
 		public static partial void Open();
-		public static partial List<string>? GetDevices();
-		public static partial string Send(string name);
-		public static partial void Listen(ParameterizedThreadStart connected);
+		public static partial List<string> GetDevices();
+		public static partial bool Connected(string deviceName);
+		public static partial bool Send(string deviceName, string message);
+		public static partial void Listen(string deviceName,ParameterizedThreadStart connected);
 	}
 }

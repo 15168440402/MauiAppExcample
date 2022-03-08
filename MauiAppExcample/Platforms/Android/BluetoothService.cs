@@ -1,6 +1,7 @@
 ﻿using Android.Bluetooth;
 using Android.Content;
 using Android.OS;
+using Java.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,8 +12,9 @@ namespace MauiAppExcample.Service
 {
     public static partial class BluetoothService
     {
-        static List<BluetoothDevice> _pairedDevices;
-        static string _uuid=Guid.NewGuid().ToString();
+        static UUID Uuid => UUID.FromString("00001105-0000-1000-8000-00805f9B34FB");
+        static List<BluetoothDevice> BondedDevices => BluetoothAdapter.DefaultAdapter.BondedDevices.ToList();
+        static Dictionary<string, BluetoothSocket> SocketMap = new Dictionary<string, BluetoothSocket>();
 
         public static partial void Open()
         {
@@ -21,73 +23,90 @@ namespace MauiAppExcample.Service
             {
                 if (!mBluetoothAdapter.IsEnabled)
                 {
-                    Intent enableIntent = new Intent(BluetoothAdapter.ActionRequestEnable);
-                    MainActivity.Current.StartActivityForResult(enableIntent, 1);
+                    mBluetoothAdapter.Enable();
                 }               
             }
         }
 
-        public static partial List<string>? GetDevices()
+        public static partial List<string> GetDevices()
         {
-            BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.DefaultAdapter;
-            _pairedDevices = mBluetoothAdapter.BondedDevices.ToList();
-            return _pairedDevices.Select(p => p.Name).ToList();
+            return BondedDevices.Select(p => p.Name).ToList();
         }
 
-        public static partial string Send(string name)
+        public static partial bool Connected(string deviceName)
         {
-            string? output;
-            var device = _pairedDevices.First(p => p.Name == name);
-            ParcelUuid uuid = device.GetUuids().ElementAt(0);
-            var sock = device.CreateInsecureRfcommSocketToServiceRecord(uuid.Uuid);
-            sock.Connect();
-            Thread t = new Thread(Connected);
-            t.Start(sock);
-
-            //ParcelUuid uuid = device.GetUuids().ElementAt(0);
-            //var mmsSocket = device.CreateInsecureRfcommSocketToServiceRecord(uuid.Uuid);
-            //mmsSocket.Connect();
-            if (sock.IsConnected)
+            try
             {
-                byte[] byteArray = Encoding.ASCII.GetBytes("Sample Text");
-                sock.OutputStream.Write(byteArray, 0, byteArray.Length);
-                output = $"蓝牙： {name} Connected Successfully。";
+                if(SocketMap.ContainsKey(deviceName)) return true; 
+                var device = BondedDevices.FirstOrDefault(d => d.Name == deviceName);
+               // var socket = device.CreateInsecureRfcommSocketToServiceRecord(device.GetUuids().ElementAt(0).Uuid);
+                var socket = device.CreateRfcommSocketToServiceRecord(Uuid);
+                socket.Connect();
+                SocketMap.Add(deviceName, socket);
+                return true;
             }
-            else
+            catch
             {
-                output = $"蓝牙： {name}  Connected Errorr";
-                return output;
+
             }
-            //using var datastream = sock.OutputStream;
-
-            //byte[] byteArray = Encoding.ASCII.GetBytes("Sample Text");
-
-            //datastream.Write(byteArray, 0, byteArray.Length);
-
-            return $"{output}发送测试数据：Sample Text 成功！";
+            return false;
         }
 
-        public static partial void Listen(ParameterizedThreadStart connected)
+        public static partial bool Send(string deviceName,string message)
         {
-            Task.Run(() =>
+            try
+            {
+                if (SocketMap.ContainsKey(deviceName) is false) return false;
+                var socket = SocketMap[deviceName];
+                byte[] byteArray = Encoding.ASCII.GetBytes(message);
+                socket.OutputStream.WriteAsync(byteArray, 0, byteArray.Length);
+                return true;
+            }
+            catch
+            {
+
+            }
+            return false;           
+        }
+
+        public static partial void Listen(string deviceName, ParameterizedThreadStart connected)
+        {
+            Task.Run(() => 
             {
                 BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.DefaultAdapter;
-                BluetoothServerSocket serverSock = mBluetoothAdapter.ListenUsingRfcommWithServiceRecord("Bluetooth", Java.Util.UUID.FromString(_uuid));
-                BluetoothSocket sock = serverSock.Accept();
-                //serverSock.Close();//服务器获得连接后腰及时关闭ServerSocket
-                                   //启动新的线程，开始数据传输
-                Thread t = new Thread(connected);
-                t.Start(sock);
-            });
+                BluetoothServerSocket serverSock = mBluetoothAdapter.ListenUsingRfcommWithServiceRecord("Bluetooth", Uuid);
+                try
+                {
+                    BluetoothSocket sock = serverSock.Accept(10000);
+                    //serverSock.Close();//服务器获得连接后腰及时关闭ServerSocket
+                    //启动新的线程，开始数据传输
+                    Thread t = new Thread(connected);
+                    t.Start(sock);
+                }
+                catch (Exception ex)
+                {
+                    serverSock.Close();
+                    Listen(deviceName, connected);
+                }
+            });      
         }
 
-        public static void Connected(object obj)
-        {
-            if (obj is BluetoothSocket sock)
-            {
-                byte[] byteArray = Encoding.ASCII.GetBytes("Sample Text");
-                sock.OutputStream.Write(byteArray, 0, byteArray.Length);
-            }
-        }
+        //public static partial async Task Listen(string deviceName, ParameterizedThreadStart connected)
+        //{
+        //    Thread t = new Thread(Monitor);
+        //    t.Start(connected);
+        //}
+
+        //private static void Monitor(object connected)
+        //{
+        //    if(connected is ParameterizedThreadStart action)
+        //    {
+        //        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.DefaultAdapter;
+        //        BluetoothServerSocket serverSock = mBluetoothAdapter.ListenUsingRfcommWithServiceRecord("Bluetooth", Uuid);
+        //        BluetoothSocket sock = serverSock.Accept(10000);
+        //        Thread t = new Thread(action);
+        //        t.Start(sock);
+        //    }
+        //}
     }
 }

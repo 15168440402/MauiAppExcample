@@ -18,12 +18,6 @@ public class MainActivity : MauiAppCompatActivity
 		base.OnCreate(savedInstanceState);
 		Platform.Init(this, savedInstanceState);
 		Current = this;
-	
-		LinearLayout relativeLayout = FindViewById<LinearLayout>(Resource.Id.ll_controller);
-		CameraPreview cameraPreview = new CameraPreview(this);
-		var a = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MatchParent, RelativeLayout.LayoutParams.MatchParent);
-		cameraPreview.LayoutParameters = a;
-		relativeLayout.AddView(cameraPreview);
 	}
 
 	public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)

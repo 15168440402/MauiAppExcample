@@ -1,0 +1,120 @@
+﻿@page "/bluetoothClient"
+@using MauiAppExcample.Service
+
+<h1>BluetoothClient</h1>
+
+<button class="btn btn-primary" @onclick="Open">打开蓝牙</button>
+<br />
+<button class="btn btn-primary" style="margin-top:8px;" @onclick="GetDevices">获取已配对的蓝牙</button>
+
+@if(_bluetoothDevices.Count>0)
+{
+	<div style="margin-top:10px;border:1px solid black;padding:4px;">
+	@foreach(var device in _bluetoothDevices)
+	{
+		<div style="border-bottom:1px solid black">
+			<span>@device.Name</span>
+			@if(device.ConnectFailedMessage is not null)
+			{
+				<span style="color:red">(@device.ConnectFailedMessage)</span>
+			}
+			<br>
+			<br>
+			<button @onclick="()=> Connect(device)" class="btn btn-primary" style="margin-left:4px;">Connect</button>			
+			<button @onclick="()=> Listen(device)" class="btn btn-primary" style="margin-left:4px;">Listen</button>
+			<br>
+			<br>
+			@if(device.IsConnect)
+			{
+				<button @onclick="()=> Send(device)" class="btn btn-primary" style="margin-left:4px;">Send</button>
+				<input @bind-value="device.SendMessage" style="margin-left:4px;" placeholder="请输入要发送的数据" />
+			}	
+			@if(device.SendSuccess)
+			{
+				<span style="color:green;margin-left:4px;">(发送数据成功)</span>				
+			}
+			else if(device.SendFailedMessage is not null)
+			{
+				<span style="color:red;margin-left:4px;">(@device.ConnectFailedMessage)</span>
+			}
+		</div>
+	}
+	</div>
+}
+
+@if(_recives.Count>0)
+{
+	<div style="margin-top:10px;border:1px solid black;padding:4px;">
+	@foreach(var recive in _recives)
+	{
+		<p>@recive</p>
+	}
+	</div>
+}
+
+@code {
+	private List<BluetoothDevice> _bluetoothDevices = new List<BluetoothDevice>();
+	private List<string> _recives = new List<string>();
+
+	private void Open()
+	{
+		BluetoothService.Open();
+	}
+
+	private void GetDevices()
+	{
+		_bluetoothDevices = BluetoothService.GetDevices().Select(d =>new BluetoothDevice { Name = d}).ToList();
+	}
+
+	private void Connect(BluetoothDevice device)
+	{
+		device.IsConnect = BluetoothService.Connected(device.Name);
+		if (device.IsConnect is false) device.ConnectFailedMessage = "蓝牙连接失败";
+		else device.ConnectFailedMessage = null;
+	}
+
+	private void Send(BluetoothDevice device)
+	{
+		device.SendSuccess = BluetoothService.Send(device.Name,device.SendMessage);
+		if (device.SendSuccess is false)
+		{
+			device.SendFailedMessage = "发送数据失败";
+		}
+		else device.SendFailedMessage = null;
+		device.SendMessage = "";
+	}
+
+	private void Listen(BluetoothDevice device)
+	{
+		 BluetoothService.Listen(device.Name, Connected);
+	}
+
+	void Connected(object obj)
+	{
+		if (obj is Android.Bluetooth.BluetoothSocket sock)
+		{    
+			while(true)
+			{
+				StreamReader sReader = new StreamReader (sock.InputStream);
+				var response = sReader.ReadLine();
+				if (string.IsNullOrEmpty(response) is false)
+				{
+					_recives.Add($"Recive bluetooth {sock.RemoteDevice.Name} send data:{response}");
+					base.InvokeAsync(StateHasChanged);					
+				}
+
+				Task.Delay(1000).Wait();
+			}
+		}
+	}
+
+	class BluetoothDevice
+	{
+		public string Name { get; set; }
+		public bool IsConnect { get; set; }
+		public bool SendSuccess	{ get; set; }
+		public string SendMessage { get; set; }
+		public string SendFailedMessage { get; set; }
+		public string ConnectFailedMessage { get; set; }
+	}
+}
